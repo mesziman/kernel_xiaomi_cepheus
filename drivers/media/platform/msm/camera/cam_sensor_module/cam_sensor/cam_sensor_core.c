@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -644,6 +644,7 @@ int cam_sensor_match_id(struct cam_sensor_ctrl_t *s_ctrl)
 	return rc;
 }
 
+uint32_t g_operation_mode = 0;
 int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 	void *arg)
 {
@@ -770,6 +771,8 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 			CAM_ERR(CAM_SENSOR, "Failed Copying from user");
 			goto release_mutex;
 		}
+
+		g_operation_mode = sensor_acq_dev.operation_mode;
 
 		bridge_params.session_hdl = sensor_acq_dev.session_handle;
 		bridge_params.ops = &s_ctrl->bridge_intf.ops;
@@ -937,13 +940,9 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 
 			rc = cam_sensor_apply_settings(s_ctrl, 0,
 				CAM_SENSOR_PACKET_OPCODE_SENSOR_INITIAL_CONFIG);
-
-			s_ctrl->i2c_data.init_settings.request_id = -1;
-
 			if (rc < 0) {
 				CAM_ERR(CAM_SENSOR,
 					"cannot apply init settings");
-				delete_request(&s_ctrl->i2c_data.init_settings);
 				goto release_mutex;
 			}
 			rc = delete_request(&s_ctrl->i2c_data.init_settings);
@@ -952,20 +951,16 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 					"Fail in deleting the Init settings");
 				goto release_mutex;
 			}
+			s_ctrl->i2c_data.init_settings.request_id = -1;
 		}
 
 		if (s_ctrl->i2c_data.config_settings.is_settings_valid &&
 			(s_ctrl->i2c_data.config_settings.request_id == 0)) {
 			rc = cam_sensor_apply_settings(s_ctrl, 0,
 				CAM_SENSOR_PACKET_OPCODE_SENSOR_CONFIG);
-
-			s_ctrl->i2c_data.config_settings.request_id = -1;
-
 			if (rc < 0) {
 				CAM_ERR(CAM_SENSOR,
 					"cannot apply config settings");
-				delete_request(
-					&s_ctrl->i2c_data.config_settings);
 				goto release_mutex;
 			}
 			rc = delete_request(&s_ctrl->i2c_data.config_settings);
@@ -975,6 +970,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 				goto release_mutex;
 			}
 			s_ctrl->sensor_state = CAM_SENSOR_CONFIG;
+			s_ctrl->i2c_data.config_settings.request_id = -1;
 		}
 	}
 		break;
@@ -1017,11 +1013,17 @@ int cam_sensor_publish_dev_info(struct cam_req_mgr_device_info *info)
 
 	info->dev_id = CAM_REQ_MGR_DEVICE_SENSOR;
 	strlcpy(info->name, CAM_SENSOR_NAME, sizeof(info->name));
-	if (s_ctrl->pipeline_delay >= 1 && s_ctrl->pipeline_delay <= 3)
+	if (s_ctrl->pipeline_delay >= 0 && s_ctrl->pipeline_delay <= 3)
 		info->p_delay = s_ctrl->pipeline_delay;
 	else
 		info->p_delay = 2;
 	info->trigger = CAM_TRIGGER_POINT_SOF;
+
+
+	if (g_operation_mode == 0x8006)
+		info->p_delay = 0;
+	if (g_operation_mode == 0x8002)
+		info->p_delay = 1;
 
 	return rc;
 }
