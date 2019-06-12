@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2018 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -22,7 +22,6 @@
 #define DCIN_BASE	0x1400
 #define TYPEC_BASE	0X1500
 #define MISC_BASE	0x1600
-#define MISC_PBS_BASE	0x7500
 
 #define PERPH_TYPE_OFFSET	0x04
 #define TYPE_MASK		GENMASK(7, 0)
@@ -87,11 +86,6 @@ enum {
 #define NO_OF_SAMPLE_FOR_RCHG_SHIFT		2
 #define NO_OF_SAMPLE_FOR_RCHG			GENMASK(3, 2)
 
-#define CHGR_ADC_TERM_CFG_REG			(CHGR_BASE + 0x6C)
-#define TERM_BASED_ON_SYNC_CONV_OR_SAMPLE_CNT	BIT(0)
-#define TERM_BASED_ON_SYNC_CONV			0
-#define TERM_BASED_ON_SAMPLE_CNT		1
-
 #define CHGR_FLOAT_VOLTAGE_CFG_REG		(CHGR_BASE + 0x70)
 
 #define CHARGE_INHIBIT_THRESHOLD_CFG_REG	(CHGR_BASE + 0x72)
@@ -132,7 +126,7 @@ enum {
  *  DCDC Peripheral Registers  *
  ********************************/
 #define ICL_MAX_STATUS_REG			(DCDC_BASE + 0x06)
-#define ICL_STATUS_REG				(DCDC_BASE + 0x07)
+
 #define AICL_ICL_STATUS_REG			(DCDC_BASE + 0x08)
 
 #define AICL_STATUS_REG				(DCDC_BASE + 0x0A)
@@ -155,10 +149,6 @@ enum {
 
 #define DCDC_OTG_CFG_REG			(DCDC_BASE + 0x53)
 #define OTG_EN_SRC_CFG_BIT			BIT(1)
-
-#define OTG_FAULT_CONDITION_CFG_REG		(DCDC_BASE + 0x56)
-#define USBIN_MID_COMP_FAULT_EN_BIT		BIT(5)
-#define USBIN_COLLAPSE_FAULT_EN_BIT		BIT(4)
 
 #define DCDC_CFG_REF_MAX_PSNS_REG		(DCDC_BASE + 0x8C)
 
@@ -187,19 +177,6 @@ enum {
 
 #define SHIP_MODE_REG				(BATIF_BASE + 0x40)
 #define SHIP_MODE_EN_BIT			BIT(0)
-
-#define BATIF_ADC_CHANNEL_EN_REG		(BATIF_BASE + 0x82)
-#define CONN_THM_CHANNEL_EN_BIT			BIT(4)
-#define DIE_TEMP_CHANNEL_EN_BIT			BIT(2)
-#define MISC_THM_CHANNEL_EN_BIT			BIT(1)
-
-#define BATIF_ADC_INTERNAL_PULL_UP_REG		(BATIF_BASE + 0x86)
-#define INTERNAL_PULL_UP_CONN_THM_MASK		GENMASK(5, 4)
-#define CONN_THM_SHIFT				4
-#define INTERNAL_PULL_NO_PULL			0x00
-#define INTERNAL_PULL_30K_PULL			0x01
-#define INTERNAL_PULL_100K_PULL			0x02
-#define INTERNAL_PULL_400K_PULL			0x03
 
 /********************************
  *  USBIN Peripheral Registers  *
@@ -254,7 +231,6 @@ enum {
 #define FORCE_12V_BIT				BIT(5)
 #define FORCE_9V_BIT				BIT(4)
 #define FORCE_5V_BIT				BIT(3)
-#define IDLE_BIT				BIT(2)
 #define SINGLE_DECREMENT_BIT			BIT(1)
 #define SINGLE_INCREMENT_BIT			BIT(0)
 
@@ -319,8 +295,9 @@ enum {
 #define USB_ENG_SSUPPLY_USB2_REG		(USBIN_BASE + 0xC0)
 #define ENG_SSUPPLY_12V_OV_OPT_BIT		BIT(1)
 
-#define USBIN_5V_AICL_THRESHOLD_REG		(USBIN_BASE + 0x81)
-#define USBIN_CONT_AICL_THRESHOLD_REG		(USBIN_BASE + 0x84)
+#define TYPE_C_CFG_REG                         (USBIN_BASE + 0x58)
+#define APSD_START_ON_CC_BIT                   BIT(7)
+
 /********************************
  *  DCIN Peripheral Registers   *
  ********************************/
@@ -330,12 +307,12 @@ enum {
 
 #define DCIN_CMD_IL_REG				(DCIN_BASE + 0x40)
 #define DCIN_SUSPEND_BIT			BIT(0)
-#define DCIN_EN_OVERRIDE_BIT			BIT(1)
-#define DCIN_EN_MASK				GENMASK(2, 1)
+#define DCIN_EN_OVERRIDE_BIT		BIT(1)
+#define DCIN_EN_BIT					BIT(2)
 
-#define DCIN_CMD_PON_REG			(DCIN_BASE + 0x45)
-#define DCIN_PON_BIT				BIT(0)
-#define MID_CHG_BIT					BIT(1)
+#define DCIN_CMD_PULLDOWN_REG		(DCIN_BASE + 0x45)
+#define DCIN_PULLDOWN_EN_BIT		BIT(0)
+#define DCIN_MID_PULLDOWN_BIT		BIT(1)
 
 #define DCIN_LOAD_CFG_REG			(DCIN_BASE + 0x65)
 #define INPUT_MISS_POLL_EN_BIT			BIT(5)
@@ -349,6 +326,9 @@ enum {
 #define SNK_RP_1P5_BIT				BIT(2)
 #define SNK_RP_3P0_BIT				BIT(1)
 #define SNK_RP_SHORT_BIT			BIT(0)
+
+#define TYPE_C_SNK_DEBUG_ACC_STATUS_REG			(TYPEC_BASE + 0x07)
+#define SNK_DEBUG_ACC_RPSTD_PRSTD_BIT			BIT(0)
 
 #define TYPE_C_SRC_STATUS_REG			(TYPEC_BASE + 0x08)
 #define DETECTED_SNK_TYPE_MASK			GENMASK(4, 0)
@@ -401,6 +381,10 @@ enum {
 #define TYPEC_CCOUT_VALUE_BIT			BIT(1)
 #define TYPEC_CCOUT_SRC_BIT			BIT(0)
 
+#define TYPE_C_DEBUG_ACC_SNK_CFG		(TYPEC_BASE + 0x4A)
+#define TYPEC_DEBUG_ACC_SNK_SEL_ICL		BIT(2)
+#define TYPEC_DEBUG_ACC_SNK_DIS_AICL		BIT(3)
+
 #define DEBUG_ACCESS_SRC_CFG_REG		(TYPEC_BASE + 0x4C)
 #define EN_UNORIENTED_DEBUG_ACCESS_SRC_BIT	BIT(0)
 
@@ -410,7 +394,6 @@ enum {
 
 #define TYPE_C_EXIT_STATE_CFG_REG		(TYPEC_BASE + 0x50)
 #define BYPASS_VSAFE0V_DURING_ROLE_SWAP_BIT	BIT(3)
-#define SEL_SRC_UPPER_REF_BIT			BIT(2)
 #define EXIT_SNK_BASED_ON_CC_BIT		BIT(0)
 
 #define TYPE_C_CURRSRC_CFG_REG			(TYPEC_BASE + 0x52)
@@ -453,13 +436,12 @@ enum {
 #define EN_MICRO_USB_FACTORY_MODE_BIT		BIT(1)
 #define EN_MICRO_USB_MODE_BIT			BIT(0)
 
-#define PMI632_TYPEC_U_USB_WATER_PROTECTION_CFG_REG	(TYPEC_BASE + 0x72)
-#define TYPEC_U_USB_WATER_PROTECTION_CFG_REG		(TYPEC_BASE + 0x73)
-#define EN_MICRO_USB_WATER_PROTECTION_BIT		BIT(4)
-#define MICRO_USB_DETECTION_ON_TIME_CFG_MASK		GENMASK(3, 2)
-#define MICRO_USB_DETECTION_PERIOD_CFG_MASK		GENMASK(1, 0)
+#define TYPEC_U_USB_WATER_PROTECTION_CFG_REG	(TYPEC_BASE + 0x73)
+#define EN_MICRO_USB_WATER_PROTECTION_BIT	BIT(4)
+#define MICRO_USB_DETECTION_ON_TIME_CFG_MASK	GENMASK(3, 2)
+#define MICRO_USB_DETECTION_PERIOD_CFG_MASK	GENMASK(1, 0)
 
-#define PMI632_TYPEC_MICRO_USB_MODE_REG		(TYPEC_BASE + 0x73)
+#define TYPEC_MICRO_USB_MODE_REG		(TYPEC_BASE + 0x73)
 #define MICRO_USB_MODE_ONLY_BIT			BIT(0)
 /********************************
  *  MISC Peripheral Registers  *
@@ -490,7 +472,6 @@ enum {
 #define BARK_BITE_WDOG_PET_BIT			BIT(0)
 
 #define AICL_CMD_REG				(MISC_BASE + 0x44)
-#define RESTART_AICL_BIT			BIT(1)
 #define RERUN_AICL_BIT				BIT(0)
 
 #define MISC_SMB_EN_CMD_REG			(MISC_BASE + 0x48)
@@ -504,11 +485,11 @@ enum {
 #define WATCHDOG_TRIGGER_AFP_EN_BIT		BIT(7)
 #define BARK_WDOG_INT_EN_BIT			BIT(6)
 #define WDOG_TIMER_EN_ON_PLUGIN_BIT		BIT(1)
+#define WDOG_TIMER_EN_BIT			BIT(0)
 
 #define SNARL_BARK_BITE_WD_CFG_REG		(MISC_BASE + 0x53)
 #define BITE_WDOG_DISABLE_CHARGING_CFG_BIT	BIT(7)
 #define SNARL_WDOG_TIMEOUT_MASK                 GENMASK(6, 4)
-#define SNARL_WDOG_TIMEOUT_SHIFT		4
 #define SNARL_WDOG_TMOUT_62P5MS			0x00
 #define SNARL_WDOG_TMOUT_1S			0x40
 #define SNARL_WDOG_TMOUT_8S			0x70
@@ -523,12 +504,7 @@ enum {
 
 #define MISC_THERMREG_SRC_CFG_REG		(MISC_BASE + 0x70)
 #define THERMREG_SW_ICL_ADJUST_BIT		BIT(7)
-#define DIE_ADC_SEL_BIT				BIT(6)
 #define THERMREG_SMB_ADC_SRC_EN_BIT		BIT(5)
-#define THERMREG_CONNECTOR_ADC_SRC_EN_BIT	BIT(4)
-#define SKIN_ADC_CFG_BIT			BIT(3)
-#define THERMREG_SKIN_ADC_SRC_EN_BIT		BIT(2)
-#define THERMREG_DIE_ADC_SRC_EN_BIT		BIT(1)
 #define THERMREG_DIE_CMP_SRC_EN_BIT		BIT(0)
 
 #define MISC_SMB_CFG_REG			(MISC_BASE + 0x90)
@@ -542,7 +518,4 @@ enum {
 
 #define SMB_REG_H_THRESHOLD_MSB_REG		(MISC_BASE + 0XBC)
 
-/* SDAM regs */
-#define MISC_PBS_RT_STS_REG			(MISC_PBS_BASE + 0x10)
-#define PULSE_SKIP_IRQ_BIT			BIT(4)
 #endif /* __SMB5_CHARGER_REG_H */
